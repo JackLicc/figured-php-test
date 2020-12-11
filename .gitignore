@@ -3,6 +3,9 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+# IntelliJ's project specific
+.idea
+
 # Laravel 4 specific
 bootstrap/compiled.php
 app/storage/
@@ -21,3 +24,4 @@ Homestead.yaml
 Homestead.json
 /.vagrant
 .phpunit.result.cache
+

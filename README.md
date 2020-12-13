@@ -14,6 +14,7 @@
   - DB_DATABASE
   - DB_USERNAME
   - DB_PASSWORD
+- php artisan key:generate
 - php artisan migrate
 - load data from CSV file
   - put the csv file in "storage/app/" directory, for example "storage/app/fertiliser-inventory-movements.csv"

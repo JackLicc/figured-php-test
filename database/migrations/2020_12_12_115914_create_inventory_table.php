@@ -10,6 +10,7 @@ class CreateInventoryTable extends Migration
     {
         Schema::create('inventory', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->date('operation_date')->comment('date recorded');
             $table->unsignedInteger('quantity')->default(0)->comment('available quantity for use');
             $table->decimal('unit_price')->comment('price per unit');
             $table->timestamps();

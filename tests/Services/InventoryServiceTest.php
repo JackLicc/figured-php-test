@@ -23,7 +23,7 @@ class InventoryServiceTest extends TestCase
         $inventoryService->expects(self::never())
             ->method('applyApplicationOperation');
 
-        $inventoryService->applyOperation($operation);
+        $inventoryService->processOperation($operation);
     }
 
     public function testApplyOperation_Application()
@@ -41,7 +41,7 @@ class InventoryServiceTest extends TestCase
         $inventoryService->expects(self::once())
             ->method('applyApplicationOperation');
 
-        $inventoryService->applyOperation($operation);
+        $inventoryService->processOperation($operation);
     }
 
     public function testLoadOperationsFromCSV()

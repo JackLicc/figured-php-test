@@ -27,7 +27,7 @@ class InventoryService
 
         // 2. apply operations
         foreach ($operations as $operation) {
-            $this->applyOperation($operation);
+            $this->processOperation($operation);
         }
     }
 
@@ -60,7 +60,7 @@ class InventoryService
         return $operations;
     }
 
-    public function applyOperation($operation)
+    public function processOperation($operation): void
     {
         switch ($operation['type']) {
             case Inventory::OPERATION_PURCHASE:
@@ -75,7 +75,7 @@ class InventoryService
         }
     }
 
-    public function applyPurchaseOperation($operation)
+    public function applyPurchaseOperation($operation): void
     {
         if (!isset($operation['date']) || !isset($operation['quantity']) || !isset($operation['unitPrice'])) {
             throw new InvalidParameterException('Missing parameters for purchase operation');
@@ -88,7 +88,7 @@ class InventoryService
         ]);
     }
 
-    public function applyApplicationOperation(array $operation)
+    public function applyApplicationOperation(array $operation): void
     {
         // 1. input validation
         if (!isset($operation['quantity']) || $operation['quantity'] >= 0) {

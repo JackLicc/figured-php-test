@@ -118,4 +118,37 @@ class InventoryService
             throw $e;
         }
     }
+
+    public function getTotalAvailableQuantity()
+    {
+        return Inventory::available()->sum('quantity');
+    }
+
+    public function getValuationOfApplication($applyQty)
+    {
+        // 1. check total available quantity
+        $sum = Inventory::available()->sum('quantity');
+        if ($sum < $applyQty) {
+            throw new InsufficientInventoryException('Insufficient inventory');
+        }
+
+        // 2. apply application and calculate applied valuation
+        $valuation = 0;
+        $rows = Inventory::available()->orderBy('id')->get();
+        foreach ($rows as $row) {
+            //   applyQty | quantity | unit_price       applyQty | valuation
+            //   100      | 40       | 7          ====> 40       | 280
+            if ($applyQty >= $row->quantity) {
+                $valuation += $row->quantity * $row->unit_price;
+                $applyQty -= $row->quantity;
+            } else {
+                //   applyQty | quantity | unit_price         applyQty | valuation
+                //   10       | 100      | 4.5        ====>   10       | 45
+                $valuation += $applyQty * $row->unit_price;
+                break;
+            }
+        }
+
+        return $valuation;
+    }
 }

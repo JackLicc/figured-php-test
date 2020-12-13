@@ -17,54 +17,61 @@ class InventoryService
      *  01/11/2019,    Application, -5 ,      (N/A)
      *
      *
-     * @param  string  $filepath
+     * @param  string  $filePath
      * @throws InvalidDataFormatException
      */
-    public function importCSV(string $filepath): void
+    public function importCSV(string $filePath): void
+    {
+        // 1. load data to $dataset
+        $operations = $this->loadOperationsFromCSV($filePath);
+
+        // 2. apply operations
+        foreach ($operations as $operation) {
+            $this->applyOperation($operation);
+        }
+    }
+
+    public function loadOperationsFromCSV($filePath): array
     {
         // 1. check existence
-        $dataset = [];
-        if (($handle = fopen($filepath, 'rb')) === false) {
+        if (($handler = fopen($filePath, 'rb')) === false) {
             throw new InvalidDataFormatException('Unable to read file');
         }
-
-        // 2. load data to $dataset
         // skip the header
-        if (fgetcsv($handle) === false) {
-            return;
+        if (fgetcsv($handler) === false) {
+            fclose($handler);
+            return [];
         }
         // read rows
-        while ($data = fgetcsv($handle)) {
+        $operations = [];
+        while ($data = fgetcsv($handler)) {
             [$date, $type, $quantity, $unitPrice] = $data;
             $date = \DateTime::createFromFormat('d/m/Y', $date)->format('Y-m-d');
-            $dataset[] = compact('date', 'type', 'quantity', 'unitPrice');
+            $operations[] = compact('date', 'type', 'quantity', 'unitPrice');
         }
-        fclose($handle);
+
+        fclose($handler);
 
         // ascending order
-        $dataset = collect($dataset)->sortBy('date')->toArray();
+        usort($operations, static function($op1, $op2) {
+            return $op1['date'] <=> $op2['date'];
+        });
 
-        // 3. apply operations
-        try {
-            DB::beginTransaction();
-            foreach ($dataset as $row) {
-                switch ($row['type']) {
-                    case Inventory::OPERATION_PURCHASE:
-                        $this->applyPurchaseOperation($row);
-                        break;
-                    case Inventory::OPERATION_APPLICATION:
-                        $this->applyApplicationOperation($row);
-                        break;
-                    default:
-                        throw new \Exception('unknown operation type: '.$row['type']);
-                        break;
-                }
-            }
-            DB::commit();
-        } catch (\Exception $e) {
-            echo $e->getMessage();
-            echo $e->getLine();
-            DB::rollBack();
+        return $operations;
+    }
+
+    public function applyOperation($operation)
+    {
+        switch ($operation['type']) {
+            case Inventory::OPERATION_PURCHASE:
+                $this->applyPurchaseOperation($operation);
+                break;
+            case Inventory::OPERATION_APPLICATION:
+                $this->applyApplicationOperation($operation);
+                break;
+            default:
+                throw new \Exception('unknown operation type: '.$operation['type']);
+                break;
         }
     }
 
@@ -100,21 +107,11 @@ class InventoryService
             DB::beginTransaction();
             $rows = Inventory::available()->orderBy('id')->get();
             foreach ($rows as $row) {
-                //  row  operation        row  operation
-                //   10  11         ===>  0    1
-                if ($applyQty >= $row->quantity) {
-                    $applyQty -= $row->quantity;
-                    $row->quantity = 0;
-                    $row->save();
-                } else {
-                    //  row  operation        row  operation
-                    //  10   8         ===>   2     0
-                    $row->quantity -= $applyQty;
-                    $row->save();
+                $applyQty = $row->applyApplicationOperation($operation);
+                if ($applyQty === 0) {
                     break;
                 }
             }
-
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();

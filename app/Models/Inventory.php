@@ -20,4 +20,20 @@ class Inventory extends Model
     {
         return $query->where('quantity', '>', 0);
     }
+
+    public function applyApplicationOperation(int $applyQty): int {
+        //  row  operation        row  operation
+        //   10  11         ===>  0    1
+        if ($applyQty >= $this->quantity) {
+            $applyQty -= $this->quantity;
+            $this->quantity = 0;
+        } else {
+            //  row  operation        row  operation
+            //  10   8         ===>   2     0
+            $this->quantity -= $applyQty;
+            $applyQty = 0;
+        }
+        $this->save();
+        return $applyQty;
+    }
 }

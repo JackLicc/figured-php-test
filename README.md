@@ -7,7 +7,13 @@
 - git clone https://github.com/JackLicc/figured-php-test.git
 - cd figured-php-test
 - composer install
-- configure database: [Laravel database configurateion](https://laravel.com/docs/4.2/database#configuration)
+- cp .env.example .env
+- configure mysql settings in .env file
+  - DB_HOST
+  - DB_PORT
+  - DB_DATABASE
+  - DB_USERNAME
+  - DB_PASSWORD
 - php artisan migrate
 - load data from CSV file
   - put the csv file in "storage/app/" directory, for example "storage/app/fertiliser-inventory-movements.csv"

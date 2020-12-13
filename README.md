@@ -8,7 +8,7 @@
 - cd figured-php-test
 - composer install
 - cp .env.example .env
-- configure mysql settings in .env file
+- configure following mysql settings in .env file
   - DB_HOST
   - DB_PORT
   - DB_DATABASE

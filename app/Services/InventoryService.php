@@ -107,7 +107,7 @@ class InventoryService
             DB::beginTransaction();
             $rows = Inventory::available()->orderBy('id')->get();
             foreach ($rows as $row) {
-                $applyQty = $row->applyApplicationOperation($operation);
+                $applyQty = $row->applyApplicationOperation($applyQty);
                 if ($applyQty === 0) {
                     break;
                 }
